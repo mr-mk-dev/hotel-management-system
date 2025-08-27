@@ -4,6 +4,8 @@ import com.hotel_management.Hotel.services.Custom.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -20,15 +22,28 @@ public class SecurityConfig {
     @Autowired
     private AppConfig appConfig;
 
+
+    @Bean
+    public RoleHierarchy roleHierarchy() {
+        // Establishing Role, So no need to write again in Owner as in User
+        return RoleHierarchyImpl.fromHierarchy("""
+        ROLE_OWNER > ROLE_STAFF
+        ROLE_STAFF > ROLE_USER
+    """);
+    }
+
+
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
                 .csrf(AbstractHttpConfigurer :: disable)
                 .authorizeHttpRequests(auth -> auth
+                        
+                        // Public
                         .requestMatchers(
-                                "/users/register",
-                                "/users/login",
+                                "/user/register" ,
+                                "/user/login",
                                 "/public/**").permitAll()
 
                         // USER Endpoints
@@ -40,24 +55,20 @@ public class SecurityConfig {
                                 "/feedback/add"      // user can add feedback
                         ).hasRole("USER")
 
-                        // STAFF Endpoints
+                        // STAFF Endpoints (inherits USER endpoints)
                         .requestMatchers(
                                 "/users/**",
-                                "/rooms/**",
                                 "/booking/all",
                                 "/booking/update/**",
                                 "/payment/all",
                                 "/payment/manual"
                         ).hasRole("STAFF")
 
-                        // OWNER Endpoints
+                        // OWNER Endpoints (inherits STAFF + USER endpoints)
                         .requestMatchers(
                                 "/analytics/**",
                                 "/staff/**",
                                 "/rooms/**",
-                                "/booking/**",
-                                "/payment/**",
-                                "/users/**",
                                 "/feedback/**"   // owner can view all feedback
                         ).hasRole("OWNER")
 
@@ -67,7 +78,7 @@ public class SecurityConfig {
                                 "/logs/**"
                         ).hasRole("DEVELOPER")
 
-                        // Any other request is denied
+                        // Block everything else
                         .anyRequest().denyAll()
                 )
                 .formLogin(Customizer.withDefaults())

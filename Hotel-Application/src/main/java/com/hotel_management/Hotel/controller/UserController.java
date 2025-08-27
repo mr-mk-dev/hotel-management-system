@@ -26,8 +26,7 @@ public class UserController {
     }
 
     @PostMapping("/user/login")
-    public ResponseEntity<String> login(
-            @RequestHeader ("Authorization") String authHeader) {
+    public ResponseEntity<String> login(@RequestHeader ("Authorization") String authHeader) {
 
         if (authHeader == null || !authHeader.startsWith("Basic ")) {
             return ResponseEntity.status(401).body("Missing or invalid Authorization header");
@@ -53,33 +52,33 @@ public class UserController {
 
         return ResponseEntity.ok("Login successful! Welcome " + user.getName());
     }
-
-    @GetMapping("/staff/profile")
-    public String returnVal (){
-        return "Returning /staff/profile";
-    }
-
-    @GetMapping("/checkin")
-    public String returnVal2 (){
-        return "Returning /checkin";
-    }
-    @GetMapping("/checkout")
-    public String returnVal3 (){
-        return "Returning /checkout";
-    }
-
-    @GetMapping("/admin")
-    public String returnVal4 (){
-        return "Returning /admin";
-    }
-    @GetMapping("/report")
-    public String returnVal5 (){
-        return "Returning /report";
-    }
-    @GetMapping("/manage")
-    public String returnVal6 (){
-        return "Returning /manage";
-    }
+//
+//    @GetMapping("/staff/profile")
+//    public String returnVal (){
+//        return "Returning /staff/profile";
+//    }
+//
+//    @GetMapping("/checkin")
+//    public String returnVal2 (){
+//        return "Returning /checkin";
+//    }
+//    @GetMapping("/checkout")
+//    public String returnVal3 (){
+//        return "Returning /checkout";
+//    }
+//
+//    @GetMapping("/admin")
+//    public String returnVal4 (){
+//        return "Returning /admin";
+//    }
+//    @GetMapping("/report")
+//    public String returnVal5 (){
+//        return "Returning /report";
+//    }
+//    @GetMapping("/manage")
+//    public String returnVal6 (){
+//        return "Returning /manage";
+//    }
 
 
 }
