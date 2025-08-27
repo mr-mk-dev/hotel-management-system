@@ -10,16 +10,17 @@ import java.util.List;
 
 public class CustomUserDetails implements UserDetails {
 
-
     private  final User user;
     public CustomUserDetails(User user){
         this.user = user;
     }
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities () {
-        return List.of(new SimpleGrantedAuthority((user.getRole().toString())));
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        String authority = "ROLE_" + user.getRole().name();
+        return List.of(new SimpleGrantedAuthority(authority));
     }
+
 
     @Override
     public String getPassword () {

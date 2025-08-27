@@ -1,5 +1,6 @@
 package com.hotel_management.Hotel.services;
 
+import com.hotel_management.Hotel.config.SecurityConfig;
 import com.hotel_management.Hotel.dto.LoginRequestDTO;
 import com.hotel_management.Hotel.dto.UserRequestDTO;
 import com.hotel_management.Hotel.dto.UserResponseDTO;
@@ -48,7 +49,6 @@ public class UserService {
 
 
     public boolean checkingUserLogin (LoginRequestDTO loginRequestDTO){
-
         Optional<User> email =
                 userRepository.findByEmail(loginRequestDTO.getEmailId()) ;
         if(email.isPresent()) {
@@ -60,4 +60,16 @@ public class UserService {
         }
         return false;
     }
+
+    public User findUserByEmail(String email){
+        Optional<User> user = userRepository.findByEmail(email);
+        return user.orElse(null);
+    }
+
+    public boolean passwordValidator( String userPass,String dbPass ){
+        return passwordEncoder.matches(
+                userPass,
+                dbPass );
+    }
+
 }
