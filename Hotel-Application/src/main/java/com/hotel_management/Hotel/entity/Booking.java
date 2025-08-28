@@ -15,8 +15,8 @@ import java.time.LocalDate;
 public class Booking {
     @Id
     private String id;
-    private User userId;
-    private Room roomId;
+    private String userId;
+    private String roomNo;
     private LocalDate checkIn;
     private LocalDate checkOut;
     private double totalAmount;

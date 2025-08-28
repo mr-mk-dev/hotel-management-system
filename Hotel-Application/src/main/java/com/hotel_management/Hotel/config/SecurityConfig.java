@@ -66,8 +66,6 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/user/**",
                                 "/room/**",
-                                "/booking/all",
-                                "/booking/update/**",
                                 "/payment/all",
                                 "/payment/manual"
                         ).hasRole("STAFF")

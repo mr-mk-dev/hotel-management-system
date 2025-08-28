@@ -1,22 +1,62 @@
 package com.hotel_management.Hotel.services;
 
+import com.hotel_management.Hotel.entity.Booking;
 import com.hotel_management.Hotel.repository.BookingRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 
-@RestController
-@RequestMapping("/booking")
+import java.time.LocalDate;
+import java.util.List;
+
+@Service
 public class BookingService {
 
     @Autowired
     private BookingRepo bookingRepo;
 
-    @GetMapping("get")
-    public String getVal(){
-        return  "Hello brother ! Tum login ho chuke ho ";
+    @Autowired
+    private RoomService roomService;
+
+    public ResponseEntity<?> allBookingList(){
+        return ResponseEntity.ok(bookingRepo.findAll());
     }
+
+    public ResponseEntity<?> findById(String id){
+        Booking booking = bookingRepo.findById(id).orElse(null);
+        if(booking !=null){
+            return ResponseEntity.ok(booking);
+        }
+        return ResponseEntity.status(404).body(null);
+    }
+
+    public ResponseEntity<?> findByUserId(String userId){
+        List<Booking> booking = bookingRepo.findByUserId(userId);
+            return ResponseEntity.ok(booking);
+    }
+
+    public ResponseEntity<?> findByRoomNo(String roomNo){
+        List<Booking> booking = bookingRepo.findByRoomNo(roomNo);
+            return ResponseEntity.ok(booking);
+    }
+
+    public ResponseEntity<?> findByRoomNoDateRange(String roomNo, LocalDate from, LocalDate to ){
+        List<Booking> bookings = bookingRepo
+                .findByRoomNoAndCheckInGreaterThanEqualAndCheckOutLessThanEqual(roomNo,from,to);
+        return ResponseEntity.ok(bookings);
+    }
+
+    public ResponseEntity<?> findByDateRange(LocalDate from, LocalDate to ){
+        List<Booking> bookings = bookingRepo
+                .findByCheckInGreaterThanEqualAndCheckOutLessThanEqual(from,to);
+        return ResponseEntity.ok(bookings);
+    }
+
+    
+
+
+
+
 
 
 }
