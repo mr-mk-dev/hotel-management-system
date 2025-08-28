@@ -34,7 +34,7 @@ public class AdminRole {
         return "Rooms : url : /rooms/list";
     }
 
-    @GetMapping("/booking/list")
+    @GetMapping("/booking/list") //
     public String bookings(){
         return "Bookings : url : /bookings/list";
     }

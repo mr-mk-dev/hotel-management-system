@@ -1,12 +1,12 @@
-//package com.hotel_management.Hotel.controller.RoleController;
-//
-//import org.springframework.web.bind.annotation.GetMapping;
-//import org.springframework.web.bind.annotation.RequestMapping;
-//import org.springframework.web.bind.annotation.RestController;
-//
-//@RestController
-//@RequestMapping
-//public class StaffRole {
+package com.hotel_management.Hotel.controller.RoleController;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping
+public class StaffRole {
 //    /*
 //        "/users/**",
 //        "/rooms/**",
@@ -31,10 +31,10 @@
 //    public String bookingUpdate (){
 //        return "Booking : url : /booking/update";
 //    }
-//    @GetMapping("/payment/all")
-//    public String payment (){
-//        return "Payment : url : /payment/all";
-//    }
+    @GetMapping("/payment/all")
+    public String payment (){
+        return "Payment : url : /payment/all";
+    }
 //
 //
-//}
+}

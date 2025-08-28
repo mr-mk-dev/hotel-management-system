@@ -26,10 +26,11 @@ public class SecurityConfig {
     @Bean
     public RoleHierarchy roleHierarchy() {
         // Establishing Role, So no need to write again in Owner as in User
-        return RoleHierarchyImpl.fromHierarchy("""
-        ROLE_OWNER > ROLE_STAFF
-        ROLE_STAFF > ROLE_USER
-    """);
+        return RoleHierarchyImpl.fromHierarchy(
+                """
+                ROLE_OWNER > ROLE_STAFF
+                ROLE_STAFF > ROLE_USER
+                """);
     }
 
 
@@ -39,7 +40,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer :: disable)
                 .authorizeHttpRequests(auth -> auth
-                        
+
                         // Public
                         .requestMatchers(
                                 "/user/register" ,
@@ -49,6 +50,12 @@ public class SecurityConfig {
                         // USER Endpoints
                         .requestMatchers(
                                 "/profile/**",
+                                "/room/list",
+                                "/room/find-type/**",
+                                "/room/find-room/**",
+                                "/room/find-amountgreater/**",
+                                "/room/find-amountless/**",
+                                "/room/find-between",
                                 "/booking/**",
                                 "/payment/**",
                                 "/feedback/my/**",   // user can see their own feedback
@@ -57,7 +64,8 @@ public class SecurityConfig {
 
                         // STAFF Endpoints (inherits USER endpoints)
                         .requestMatchers(
-                                "/users/**",
+                                "/user/**",
+                                "/room/**",
                                 "/booking/all",
                                 "/booking/update/**",
                                 "/payment/all",
@@ -68,7 +76,6 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/analytics/**",
                                 "/staff/**",
-                                "/rooms/**",
                                 "/feedback/**"   // owner can view all feedback
                         ).hasRole("OWNER")
 
