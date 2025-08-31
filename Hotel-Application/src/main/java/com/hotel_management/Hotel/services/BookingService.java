@@ -32,7 +32,6 @@ public class BookingService {
             return ResponseEntity.status(404).body("Room Number Not Exists");
         }
         User u = userRepo.findById(booking.getUserId()).orElse(null);
-        System.out.println(u);
         if (u == null) {
             return ResponseEntity.status(404).body("User Not Exists , Try Register Now");
         }

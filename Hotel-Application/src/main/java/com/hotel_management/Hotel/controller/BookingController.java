@@ -1,6 +1,7 @@
 package com.hotel_management.Hotel.controller;
 
 import com.hotel_management.Hotel.entity.Booking;
+import com.hotel_management.Hotel.enums.BookingStatus;
 import com.hotel_management.Hotel.services.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -55,18 +56,38 @@ public class BookingController {
     @GetMapping("/find-by-room-range")
     public ResponseEntity<?> findByRoomDateRange(
             @RequestParam String roomNo,
-            @RequestParam @DateTimeFormat(pattern="dd-MM-yyyy") Date from,
-            @RequestParam @DateTimeFormat(pattern="dd-MM-yyyy") Date to){
+            @RequestParam @DateTimeFormat(pattern="yyyy-MM-dd") Date from,
+            @RequestParam @DateTimeFormat(pattern="yyyy-MM-dd") Date to){
         return bookingService.findByRoomNoDateRange(roomNo,from,to);
     }
 
     @GetMapping("/find-by-date-range")
     public ResponseEntity<?> findByDateRange(
-            @RequestParam Date from ,
-            @RequestParam Date to){
+            @RequestParam @DateTimeFormat(pattern="yyyy-MM-dd") Date from,
+            @RequestParam @DateTimeFormat(pattern="yyyy-MM-dd") Date to) {
         return bookingService.findByDateRange(from,to);
     }
 
+    @GetMapping("find-by-payment-method/{paymentMethod}")
+    public ResponseEntity<?> findByPaymentMethod(@PathVariable String paymentMethod){
+        return bookingService.findByPaymentMode(paymentMethod.toUpperCase());
+    }
+
+    @GetMapping("count-by-status")
+    public ResponseEntity<?> countByStatus(BookingStatus status){
+        return  bookingService.countByStatus(status);
+    }
+
+    @GetMapping("find-by-checkout")
+    public ResponseEntity<?> findByCheckoutDate(
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date checkOut){
+        return bookingService.findByCheckOut(checkOut);
+    }
+
+    @GetMapping("find-by-status/{status}")
+    public ResponseEntity<?> findByStatus(BookingStatus status){
+        return bookingService.findByStatus(status);
+    }
 
 
 
