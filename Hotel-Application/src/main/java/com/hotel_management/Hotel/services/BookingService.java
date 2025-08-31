@@ -162,6 +162,7 @@ public class BookingService {
         if(booking!=null) {
 
             if (bookingRepo.existsByRoomNoAndCheckInLessThanEqualAndCheckOutGreaterThanEqual(
+                    
                     newBooking.getRoomNo(),newBooking.getCheckIn(),newBooking.getCheckOut())){
                 return ResponseEntity.notFound().build();
             }
