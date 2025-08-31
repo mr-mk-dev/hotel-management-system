@@ -73,22 +73,31 @@ public class BookingController {
         return bookingService.findByPaymentMode(paymentMethod.toUpperCase());
     }
 
-    @GetMapping("count-by-status")
-    public ResponseEntity<?> countByStatus(BookingStatus status){
-        return  bookingService.countByStatus(status);
+    @GetMapping("count-by-status/{status}")
+    public ResponseEntity<?> countByStatus(@PathVariable String status){
+        return  bookingService.countByStatus(BookingStatus.valueOf(status.toUpperCase()));
     }
 
-    @GetMapping("find-by-checkout")
+    @GetMapping("find-by-checkout/{checkOut}")
     public ResponseEntity<?> findByCheckoutDate(
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date checkOut){
+            @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date checkOut) {
         return bookingService.findByCheckOut(checkOut);
     }
 
     @GetMapping("find-by-status/{status}")
-    public ResponseEntity<?> findByStatus(BookingStatus status){
+    public ResponseEntity<?> findByStatus(@PathVariable  BookingStatus status){
         return bookingService.findByStatus(status);
     }
 
+    @GetMapping("find-by-user-id-room-no/{userId}/{roomNo}")
+    public ResponseEntity<?> findByUserIdRoomNo(@PathVariable String userId,@PathVariable String roomNo){
+        return bookingService.findByUserIdAndRoomNo(userId,roomNo);
+    }
+
+    @GetMapping("find-by-amount-between/{from}/{to}")
+    public ResponseEntity<?> findByAmountBetween(@PathVariable double from,@PathVariable double to){
+        return bookingService.findByAmountBetween(from,to);
+    }
 
 
 }

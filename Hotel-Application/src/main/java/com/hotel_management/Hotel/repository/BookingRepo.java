@@ -50,6 +50,6 @@ public interface BookingRepo extends MongoRepository<Booking, String> {
     List<Booking> findByTotalAmountBetween(double min, double max);
 
 //    12 . We can find list of booking by checkout date
-    List<Booking> findByCheckOut(Date checkOut);
+    List<Booking> findByCheckOutBetween(Date start, Date end);
 
 }

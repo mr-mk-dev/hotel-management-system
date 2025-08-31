@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -126,9 +127,26 @@ public class BookingService {
     }
 
     public ResponseEntity<?> findByCheckOut(Date checkOut) {
-        List<Booking> bookings = bookingRepo.findByCheckOut(checkOut);
-        return bookings.isEmpty() ? ResponseEntity.status(204).body("No bookings found") : ResponseEntity.ok(bookings);
+//        MongoDB stores Date with time information (full ISODate including hours, minutes, seconds, milliseconds).
+//        so we need to normalize it
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(checkOut);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        Date startOfDay = cal.getTime();
+
+        cal.add(Calendar.DAY_OF_MONTH, 1);
+        Date endOfDay = cal.getTime();
+
+        List<Booking> bookings = bookingRepo.findByCheckOutBetween(startOfDay, endOfDay);
+
+        return bookings.isEmpty()
+                ? ResponseEntity.status(204).body("No bookings found")
+                : ResponseEntity.ok(bookings);
     }
+
 
     public ResponseEntity<?> countByStatus(BookingStatus status) {
         long count = bookingRepo.countByStatus(status);
@@ -159,6 +177,4 @@ public class BookingService {
             return ResponseEntity.noContent().build();
         }).orElse(ResponseEntity.notFound().build());
     }
-
-
 }
