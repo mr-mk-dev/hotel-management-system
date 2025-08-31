@@ -147,7 +147,6 @@ public class BookingService {
                 : ResponseEntity.ok(bookings);
     }
 
-
     public ResponseEntity<?> countByStatus(BookingStatus status) {
         long count = bookingRepo.countByStatus(status);
         return ResponseEntity.ok(count);
@@ -159,16 +158,27 @@ public class BookingService {
     }
 
     public ResponseEntity<?> updateBooking(String id, Booking newBooking) {
-        return bookingRepo.findById(id).map(existing -> {
-            existing.setCheckIn(newBooking.getCheckIn());
-            existing.setCheckOut(newBooking.getCheckOut());
-            existing.setStatus(newBooking.getStatus());
-            existing.setTotalAmount(newBooking.getTotalAmount());
-            existing.setPaymentMode(newBooking.getPaymentMode());
-            existing.setRoomNo(newBooking.getRoomNo());
-            existing.setUserId(newBooking.getUserId());
-            return ResponseEntity.ok(bookingRepo.save(existing));
-        }).orElse(ResponseEntity.notFound().build());
+        Booking booking = bookingRepo.findById(id).orElse(null);
+        if(booking!=null) {
+
+            if (bookingRepo.existsByRoomNoAndCheckInLessThanEqualAndCheckOutGreaterThanEqual(
+                    newBooking.getRoomNo(),newBooking.getCheckIn(),newBooking.getCheckOut())){
+                return ResponseEntity.notFound().build();
+            }
+
+            return bookingRepo.findById(id).map(existing -> {
+                existing.setCheckIn(newBooking.getCheckIn());
+                existing.setCheckOut(newBooking.getCheckOut());
+                existing.setStatus(newBooking.getStatus());
+                existing.setTotalAmount(newBooking.getTotalAmount());
+                existing.setPaymentMode(newBooking.getPaymentMode());
+                existing.setRoomNo(newBooking.getRoomNo());
+                existing.setUserId(newBooking.getUserId());
+                return ResponseEntity.ok(bookingRepo.save(existing));
+            }).orElse(ResponseEntity.notFound().build());
+        }else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     public ResponseEntity<?> deleteBooking(String id) {
