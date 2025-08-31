@@ -56,7 +56,7 @@ public class SecurityConfig {
                                 "/room/find-amountgreater/**",
                                 "/room/find-amountless/**",
                                 "/room/find-between",
-                                "/booking/**",
+                                "/booking/add",
                                 "/payment/**",
                                 "/feedback/my/**",   // user can see their own feedback
                                 "/feedback/add"      // user can add feedback
@@ -66,6 +66,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/user/**",
                                 "/room/**",
+                                "/booking/**",
                                 "/payment/all",
                                 "/payment/manual"
                         ).hasRole("STAFF")

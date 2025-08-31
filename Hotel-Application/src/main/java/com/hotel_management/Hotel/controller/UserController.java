@@ -52,35 +52,6 @@ public class UserController {
 
         return ResponseEntity.ok("Login successful! Welcome " + user.getName());
     }
-//
-//    @GetMapping("/staff/profile")
-//    public String returnVal (){
-//        return "Returning /staff/profile";
-//    }
-//
-//    @GetMapping("/checkin")
-//    public String returnVal2 (){
-//        return "Returning /checkin";
-//    }
-//    @GetMapping("/checkout")
-//    public String returnVal3 (){
-//        return "Returning /checkout";
-//    }
-//
-//    @GetMapping("/admin")
-//    public String returnVal4 (){
-//        return "Returning /admin";
-//    }
-//    @GetMapping("/report")
-//    public String returnVal5 (){
-//        return "Returning /report";
-//    }
-//    @GetMapping("/manage")
-//    public String returnVal6 (){
-//        return "Returning /manage";
-//    }
-
-
 }
 
 

@@ -5,7 +5,7 @@ import com.hotel_management.Hotel.enums.BookingStatus;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 
@@ -17,11 +17,11 @@ public interface BookingRepo extends MongoRepository<Booking, String> {
 
     // 2. Find bookings by roomNo and date range
     List<Booking> findByRoomNoAndCheckInGreaterThanEqualAndCheckOutLessThanEqual(
-            String roomNo, LocalDate from, LocalDate to);
+            String roomNo, java.util.Date from, java.util.Date to);
 
     // 3. Find bookings by date range
     List<Booking> findByCheckInGreaterThanEqualAndCheckOutLessThanEqual(
-            LocalDate from, LocalDate to);
+            Date from, Date to);
 
     // 4. Find bookings by booking status
     List<Booking> findByStatus(BookingStatus status);
@@ -34,7 +34,7 @@ public interface BookingRepo extends MongoRepository<Booking, String> {
 
     // 7. Find active bookings for a room at a given date (very important for conflicts)
     List<Booking> findByRoomNoAndCheckInLessThanEqualAndCheckOutGreaterThanEqual(
-            String roomNo, LocalDate date1, LocalDate date2);
+            String roomNo, Date date1, Date date2);
 
     // 8. Find bookings by payment mode
     List<Booking> findByPaymentMode(String paymentMode);
@@ -44,12 +44,12 @@ public interface BookingRepo extends MongoRepository<Booking, String> {
 
     // 10. Check if a room is already booked between given dates
     boolean existsByRoomNoAndCheckInLessThanEqualAndCheckOutGreaterThanEqual(
-            String roomNo, LocalDate checkOut, LocalDate checkIn);
+            String roomNo, Date checkOut, Date checkIn);
 
     // 11. Find list of room between range of room of bookings
     List<Booking> findByTotalAmountBetween(double min, double max);
 
 //    12 . We can find list of booking by checkout date
-    List<Booking> findByCheckOut(LocalDate checkOut);
+    List<Booking> findByCheckOut(Date checkOut);
 
 }
