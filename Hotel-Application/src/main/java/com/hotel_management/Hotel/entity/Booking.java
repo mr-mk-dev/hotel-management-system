@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -20,9 +20,9 @@ public class Booking {
     private String roomNo;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private Date checkIn;
+    private LocalDate checkIn;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private Date checkOut;
+    private LocalDate checkOut;
     private double totalAmount;
     private String paymentMode;   // Cash, UPI, Card
     private BookingStatus status;       // Confirmed, Active, Completed

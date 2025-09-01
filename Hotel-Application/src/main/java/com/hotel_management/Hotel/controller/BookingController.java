@@ -8,7 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/booking")
@@ -56,15 +56,15 @@ public class BookingController {
     @GetMapping("/find-by-room-range")
     public ResponseEntity<?> findByRoomDateRange(
             @RequestParam String roomNo,
-            @RequestParam @DateTimeFormat(pattern="yyyy-MM-dd") Date from,
-            @RequestParam @DateTimeFormat(pattern="yyyy-MM-dd") Date to){
+            @RequestParam @DateTimeFormat(pattern="yyyy-MM-dd") LocalDate from,
+            @RequestParam @DateTimeFormat(pattern="yyyy-MM-dd") LocalDate to){
         return bookingService.findByRoomNoDateRange(roomNo,from,to);
     }
 
     @GetMapping("/find-by-date-range")
     public ResponseEntity<?> findByDateRange(
-            @RequestParam @DateTimeFormat(pattern="yyyy-MM-dd") Date from,
-            @RequestParam @DateTimeFormat(pattern="yyyy-MM-dd") Date to) {
+            @RequestParam @DateTimeFormat(pattern="yyyy-MM-dd") LocalDate from,
+            @RequestParam @DateTimeFormat(pattern="yyyy-MM-dd") LocalDate to) {
         return bookingService.findByDateRange(from,to);
     }
 
@@ -80,7 +80,7 @@ public class BookingController {
 
     @GetMapping("find-by-checkout/{checkOut}")
     public ResponseEntity<?> findByCheckoutDate(
-            @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date checkOut) {
+            @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate checkOut) {
         return bookingService.findByCheckOut(checkOut);
     }
 
