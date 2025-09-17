@@ -7,13 +7,20 @@ import com.hotel_management.Hotel.mapper.UserMapper;
 import com.hotel_management.Hotel.services.Custom.CustomUserDetails;
 import com.hotel_management.Hotel.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Base64;
+import java.util.Map;
 
 @RestController
 @RequestMapping
@@ -24,6 +31,8 @@ public class UserController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     public UserController(UserService userService, UserMapper userMapper) {
         this.userService = userService;
@@ -33,7 +42,7 @@ public class UserController {
     @PostMapping("/user/register")
     public ResponseEntity<?> createUser(@RequestBody UserRequestDTO requestDTO) {
         UserResponseDTO responseDTO = userService.createUser(requestDTO);
-        return ResponseEntity.ok(responseDTO);
+        return responseDTO!=null ? ResponseEntity.ok(responseDTO) : ResponseEntity.badRequest().body("Email or phone already exists");
     }
 
     @PostMapping("/user/login")
@@ -43,18 +52,24 @@ public class UserController {
         if ("Fail".equals(token)) {
             return ResponseEntity.status(401).body("Invalid credentials");
         }
-        return ResponseEntity.ok(token);
+        User user = userService.findUserByEmail(loginRequest.getEmail());
+
+        return ResponseEntity.ok(Map.of("token", token,"user", userMapper.toResponseDTO(user)));
     }
 
-    @GetMapping("/profile")
+    @GetMapping("/user/profile")
     public ResponseEntity<?> profile(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        String email = userDetails.getUsername();
-        User user = userService.findUserByEmail(email);
-        if (user == null) throw new UsernameNotFoundException("User not found");
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+        }
+
+        User user = userService.findUserByEmail(userDetails.getUsername());
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+
         return ResponseEntity.ok(userMapper.toResponseDTO(user));
     }
-
-
 
 }
 

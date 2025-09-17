@@ -50,8 +50,6 @@ public class RoomService {
             }
 
             Room room = new Room();
-            room.setSuccess(true);
-            room.setMessage("Room created successfully");
             room.setRoomNo(roomNo);
             room.setType(type);
             room.setPricePerNight(pricePerNight);

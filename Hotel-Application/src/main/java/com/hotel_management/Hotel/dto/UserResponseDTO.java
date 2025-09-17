@@ -8,8 +8,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class UserResponseDTO {
-    private Boolean success;
-    private String message;
     private String id;
     private String name;
     private String email;

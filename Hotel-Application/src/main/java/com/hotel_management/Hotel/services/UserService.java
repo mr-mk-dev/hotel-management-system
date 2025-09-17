@@ -38,7 +38,7 @@ public class UserService {
 
     public UserResponseDTO createUser(UserRequestDTO requestDTO) {
 
-        if (userRepository.existsByEmail(requestDTO.getEmail()) || userRepository.existsByPhone(requestDTO.getPhone()) ){   // checking phone
+        if (userRepository.existsByEmail(requestDTO.getEmail()) || userRepository.existsByPhone(requestDTO.getPhone()) ){
             return null;
         }
 
@@ -69,6 +69,4 @@ public class UserService {
         }
         return "Fail";
     }
-
-
 }

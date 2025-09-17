@@ -23,8 +23,6 @@ public class UserMapper {
     public UserResponseDTO toResponseDTO(User user) {
         if (user == null) return null;
         return UserResponseDTO.builder()
-                .success(true)
-                .message("User Created Successfully")
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())

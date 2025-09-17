@@ -12,10 +12,6 @@ import java.util.List;
 @Data
 @Document(collection = "rooms")
 public class Room {
-
-    private Boolean success;
-    private String message;
-
     @Id
     private String id;
 

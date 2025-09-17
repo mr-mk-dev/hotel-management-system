@@ -47,4 +47,8 @@ public class FeedbackService {
    public List<Feedback> findByRatingIsLessThanEqual(int rating) {
        return feedbackRepo.findByRatingIsLessThanEqual(rating);
    }
+
+    public List<Feedback> findAll() {
+       return  feedbackRepo.findAll();
+    }
 }

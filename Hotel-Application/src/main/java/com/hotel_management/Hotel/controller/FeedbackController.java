@@ -2,13 +2,17 @@ package com.hotel_management.Hotel.controller;
 
 import com.hotel_management.Hotel.entity.Booking;
 import com.hotel_management.Hotel.entity.Feedback;
+import com.hotel_management.Hotel.entity.User;
 import com.hotel_management.Hotel.enums.BookingStatus;
+import com.hotel_management.Hotel.enums.Role;
 import com.hotel_management.Hotel.repository.BookingRepo;
+import com.hotel_management.Hotel.repository.UserRepo;
 import com.hotel_management.Hotel.services.Custom.CustomUserDetails;
 import com.hotel_management.Hotel.services.FeedbackService;
 import com.mongodb.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -21,10 +25,12 @@ public class FeedbackController {
 
     private final FeedbackService feedbackService;
     private final BookingRepo bookingRepo;
+    private final UserRepo userRepo;
 
-    public FeedbackController(FeedbackService feedbackService, BookingRepo bookingRepo) {
+    public FeedbackController(FeedbackService feedbackService, BookingRepo bookingRepo, UserRepo userRepo) {
         this.feedbackService = feedbackService;
         this.bookingRepo = bookingRepo;
+        this.userRepo = userRepo;
     }
 
     @PostMapping("/add/{bookingId}")
@@ -32,31 +38,27 @@ public class FeedbackController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable String bookingId,
             @RequestBody Feedback feedback
-    ) {
-        String userId = userDetails.getUsername();
-
-        // 1) Check booking exists first
+    ){
+        String emailId = userDetails.getUsername();
+        User user = userRepo.findByEmail(emailId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        if((Role.USER!=user.getRole())){
+            return ResponseEntity.badRequest().body("You are not allowed to perform this operation");
+        }
         Booking booking = bookingRepo.findById(bookingId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
-
-        // 2) Authorization: only booking owner may submit feedback
-        if (!userId.equals(booking.getUserId())) {
+        if (!user.getId().equals(booking.getUserId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("You are only allowed to post feedback for your own booking.");
+                    .body("You are only allowed to post feedback.");
         }
 
-        // 3) Optional: allow feedback only after checkout/completion
         if (booking.getStatus() != BookingStatus.COMPLETED) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Feedback is allowed only after checkout (booking must be COMPLETED).");
         }
 
-        // 4) Prevent duplicate feedback (race safe approach: rely on unique index + handle duplicate key)
         if (!feedbackService.findByBookingId(bookingId).isEmpty()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Feedback already exists for this booking");
         }
-
-        // 5) Enforce server-side ownership of feedback data
         feedback.setRating(feedback.getRating());
         feedback.setComment(feedback.getComment());
         feedback.setCreatedAt(LocalDateTime.now());
@@ -65,7 +67,6 @@ public class FeedbackController {
             Feedback saved = feedbackService.saveFeedback(feedback);
             return ResponseEntity.ok(saved);
         } catch (DuplicateKeyException ex) {
-            // guard against a race condition creating two feedbacks concurrently
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Feedback already exists (race detected).");
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to save feedback");
@@ -79,6 +80,11 @@ public class FeedbackController {
             @RequestBody Feedback feedback) {
 
         String userId = userDetails.getUsername();
+        String emailId = userDetails.getUsername();
+        User user = userRepo.findByEmail(emailId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        if((Role.USER!=user.getRole())){
+            return ResponseEntity.badRequest().body("You are not allowed to perform this operation");
+        }
 
         Feedback existing = feedbackService.getFeedbackById(feedbackId);
         if (existing == null) {
@@ -97,6 +103,10 @@ public class FeedbackController {
         return ResponseEntity.ok(feedbackService.saveFeedback(existing));
     }
 
+    @GetMapping("/list")
+    public ResponseEntity<?> getFeedbacks() {
+        return ResponseEntity.ok(feedbackService.findAll());
+    }
 
 }
 
