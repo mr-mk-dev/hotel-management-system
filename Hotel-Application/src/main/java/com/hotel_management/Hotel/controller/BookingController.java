@@ -85,7 +85,7 @@ public class BookingController {
     }
 
     @GetMapping("find-by-status/{status}")
-    public ResponseEntity<?> findByStatus(@PathVariable  BookingStatus status){
+    public ResponseEntity<?> findByStatus(@PathVariable  String status){
         return bookingService.findByStatus(status);
     }
 

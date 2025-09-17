@@ -1,16 +1,20 @@
 package com.hotel_management.Hotel.entity;
 
 import lombok.*;
-import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Document (collection = "rooms")
+@Document(collection = "rooms")
 public class Room {
+
+    private Boolean success;
+    private String message;
 
     @Id
     private String id;
@@ -22,5 +26,8 @@ public class Room {
 
     private double pricePerNight;
 
+    private List<ImageResource> images = new ArrayList<>();
+
 }
+
 

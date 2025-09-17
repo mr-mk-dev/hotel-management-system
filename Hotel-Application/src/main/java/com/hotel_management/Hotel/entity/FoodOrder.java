@@ -13,9 +13,9 @@ import java.util.List;
 public class FoodOrder {
     @Id
     private String id;
-    private User userId;
+    private String userId;
     private List<String> items;
     private double totalBill;
-    private String status;   // Ordered, Delivered
+    private String status;
 }
 

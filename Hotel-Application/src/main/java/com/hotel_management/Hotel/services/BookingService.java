@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -29,11 +28,13 @@ public class BookingService {
     @Autowired
     private UserRepo userRepo;
 
+    private static final String BOOKBINDING = "No Booking Found";
+
     public ResponseEntity<?> addBooking(Booking booking) {
         String roomNo = booking.getRoomNo();
         Room room = roomRepo.findByRoomNo(roomNo).orElse(null);
         // 1. Basic validation
-        if (room==null) {
+        if (room == null) {
             return ResponseEntity.status(404).body("Room Number Not Exists");
         }
         User u = userRepo.findById(booking.getUserId()).orElse(null);
@@ -83,8 +84,10 @@ public class BookingService {
         }
 
         // 4. Save if no conflicts
-        long daysStayed = ChronoUnit.DAYS.between(booking.getCheckIn(),booking.getCheckOut());
-        double totalAmount = roomRepo.findByRoomNo(roomNo).get().getPricePerNight() * daysStayed;
+        long daysStayed = ChronoUnit.DAYS.between(booking.getCheckIn(), booking.getCheckOut());
+        Room room1 = roomRepo.findByRoomNo(roomNo).orElse(null);
+        assert room1 != null;
+        double totalAmount = room1.getPricePerNight() * daysStayed;
         booking.setTotalAmount(totalAmount);
         booking.setStatus(BookingStatus.PENDING);
         Booking saved = bookingRepo.save(booking);
@@ -108,14 +111,14 @@ public class BookingService {
     public ResponseEntity<?> findByUserId(String userId) {
         List<Booking> bookings = bookingRepo.findByUserId(userId);
         return bookings.isEmpty()
-                ? ResponseEntity.status(204).body("No bookings found")
+                ? ResponseEntity.status(204).body(BOOKBINDING)
                 : ResponseEntity.ok(bookings);
     }
 
     public ResponseEntity<?> findByRoomNo(String roomNo) {
         List<Booking> bookings = bookingRepo.findByRoomNo(roomNo);
         return bookings.isEmpty()
-                ? ResponseEntity.status(204).body("No bookings found")
+                ? ResponseEntity.status(204).body(BOOKBINDING)
                 : ResponseEntity.ok(bookings);
     }
 
@@ -123,7 +126,7 @@ public class BookingService {
         List<Booking> bookings =
                 bookingRepo.findByRoomNoAndCheckInGreaterThanEqualAndCheckOutLessThanEqual(roomNo, from, to);
         return bookings.isEmpty()
-                ? ResponseEntity.status(204).body("No bookings found")
+                ? ResponseEntity.status(204).body(BOOKBINDING)
                 : ResponseEntity.ok(bookings);
     }
 
@@ -131,33 +134,34 @@ public class BookingService {
         List<Booking> bookings =
                 bookingRepo.findByCheckInGreaterThanEqualAndCheckOutLessThanEqual(from, to);
         return bookings.isEmpty()
-                ? ResponseEntity.status(204).body("No bookings found")
+                ? ResponseEntity.status(204).body(BOOKBINDING)
                 : ResponseEntity.ok(bookings);
     }
 
-    public ResponseEntity<?> findByStatus(BookingStatus status) {
-        List<Booking> bookings = bookingRepo.findByStatus(status);
+    public ResponseEntity<?> findByStatus(String status) {
+        BookingStatus b = BookingStatus.valueOf(status.toUpperCase());
+        List<Booking> bookings = bookingRepo.findByStatus(b);
         return bookings.isEmpty()
-                ? ResponseEntity.status(204).body("No bookings found")
+                ? ResponseEntity.status(204).body(BOOKBINDING)
                 : ResponseEntity.ok(bookings);
     }
 
     public ResponseEntity<?> findByUserIdAndRoomNo(String userId, String roomNo) {
-        List<Booking> bookings = Collections.singletonList(bookingRepo.findByUserIdAndRoomNo(userId, roomNo).orElse(null));
+        List<Booking> bookings = bookingRepo.findAllByUserIdAndRoomNo(userId,roomNo);
         return ResponseEntity.ok(bookings);
     }
 
     public ResponseEntity<?> findByAmountBetween(double min, double max) {
         List<Booking> bookings = bookingRepo.findByTotalAmountBetween(min, max);
         return bookings.isEmpty()
-                ? ResponseEntity.status(204).body("No bookings found")
+                ? ResponseEntity.status(204).body(BOOKBINDING)
                 : ResponseEntity.ok(bookings);
     }
 
     public ResponseEntity<?> findByCheckOut(LocalDate checkOut) {
         List<Booking> bookings = bookingRepo.findByCheckOut(checkOut);
         return bookings.isEmpty()
-                ? ResponseEntity.status(204).body("No bookings found")
+                ? ResponseEntity.status(204).body(BOOKBINDING)
                 : ResponseEntity.ok(bookings);
     }
 
@@ -169,7 +173,7 @@ public class BookingService {
     public ResponseEntity<?> findByPaymentMode(String paymentMode) {
         List<Booking> bookings = bookingRepo.findByPaymentMode(paymentMode);
         return bookings.isEmpty()
-                ? ResponseEntity.status(204).body("No bookings found")
+                ? ResponseEntity.status(204).body(BOOKBINDING)
                 : ResponseEntity.ok(bookings);
     }
 
@@ -178,7 +182,7 @@ public class BookingService {
         Booking dbBooking = bookingRepo.findById(id).orElse(null);
         User u = userRepo.findById(newBooking.getUserId()).orElse(null);
         return bookingRepo.findById(id).map(existing -> {
-            if (room==null || dbBooking == null || u == null) {
+            if (room == null || dbBooking == null || u == null) {
                 return ResponseEntity.status(404).body("Data Mismatch (Either Room Not Found ," +
                         "User Not Found , Booking Not Found");
             }
@@ -226,12 +230,12 @@ public class BookingService {
                 }
             }
 
-            long daysStayed = ChronoUnit.DAYS.between(newBooking.getCheckIn(),newBooking.getCheckOut());
+            long daysStayed = ChronoUnit.DAYS.between(newBooking.getCheckIn(), newBooking.getCheckOut());
             double totalAmount = roomRepo.findByRoomNo(newBooking.getRoomNo()).get().getPricePerNight();
             existing.setCheckIn(newBooking.getCheckIn());
             existing.setCheckOut(newBooking.getCheckOut());
             existing.setStatus(BookingStatus.PENDING);
-            existing.setTotalAmount(daysStayed*totalAmount);
+            existing.setTotalAmount(daysStayed * totalAmount);
             existing.setPaymentMode(newBooking.getPaymentMode());
             existing.setRoomNo(newBooking.getRoomNo());
             existing.setUserId(newBooking.getUserId());

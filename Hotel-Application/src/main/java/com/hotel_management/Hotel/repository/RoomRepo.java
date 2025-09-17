@@ -23,4 +23,6 @@ public  interface RoomRepo extends MongoRepository<Room,String> {
                                                    double maxPrice);
    Optional<Room> deleteByRoomNo(String roomNo);
 
+   boolean existsByRoomNo(String roomNo);
+
 }

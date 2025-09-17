@@ -29,7 +29,7 @@ public interface BookingRepo extends MongoRepository<Booking, String> {
     List<Booking> findByUserId(String userId);
 
     // 6. Find booking by customer + room
-    Optional<Booking> findByUserIdAndRoomNo(String userId, String roomNo);
+    List<Booking> findAllByUserIdAndRoomNo(String userId, String roomNo);
 
     // 7. Check active bookings for a room (to avoid double-booking conflicts)
     List<Booking> findByRoomNoAndCheckInLessThanEqualAndCheckOutGreaterThanEqual(
@@ -51,7 +51,6 @@ public interface BookingRepo extends MongoRepository<Booking, String> {
     // 12. Find bookings by checkout date range
     List<Booking> findByCheckOutBetween(LocalDate start, LocalDate end);
 
-    // 🔥 Extra queries (recommended)
     // 13. Find latest booking of a user (to check last visit)
     Optional<Booking> findTopByUserIdOrderByCheckOutDesc(String userId);
 
