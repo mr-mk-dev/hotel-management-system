@@ -33,12 +33,13 @@ public class BookingService {
     public ResponseEntity<?> addBooking(Booking booking) {
         String roomNo = booking.getRoomNo();
         Room room = roomRepo.findByRoomNo(roomNo).orElse(null);
-        // 1. Basic validation
+        User user = userRepo.findById(booking.getUserId()).orElse(null);
+
+        //Basic validation
         if (room == null) {
             return ResponseEntity.status(404).body("Room Number Not Exists");
         }
-        User u = userRepo.findById(booking.getUserId()).orElse(null);
-        if (u == null) {
+        if (user == null) {
             return ResponseEntity.status(404).body("User Not Exists , Try Register Now");
         }
         if (booking.getCheckIn() == null || booking.getCheckOut() == null) {
@@ -49,7 +50,7 @@ public class BookingService {
         }
 
 
-        // 2. Fetch existing bookings for this room
+        // Fetch existing bookings for this room
         List<Booking> existingBookings = bookingRepo.findByRoomNo(roomNo);
 
         // Filter out only relevant bookings
@@ -60,7 +61,7 @@ public class BookingService {
                 .sorted(Comparator.comparing(Booking::getCheckIn))
                 .toList();
 
-        // 3. Check conflicts
+        //Check conflicts
         for (Booking existing : existingBookings) {
             LocalDate existingIn = existing.getCheckIn();
             LocalDate existingOut = existing.getCheckOut();
@@ -83,11 +84,9 @@ public class BookingService {
             }
         }
 
-        // 4. Save if no conflicts
+        //Save if no conflicts
         long daysStayed = ChronoUnit.DAYS.between(booking.getCheckIn(), booking.getCheckOut());
-        Room room1 = roomRepo.findByRoomNo(roomNo).orElse(null);
-        assert room1 != null;
-        double totalAmount = room1.getPricePerNight() * daysStayed;
+        double totalAmount = room.getPricePerNight() * daysStayed;
         booking.setTotalAmount(totalAmount);
         booking.setStatus(BookingStatus.PENDING);
         Booking saved = bookingRepo.save(booking);
@@ -250,4 +249,43 @@ public class BookingService {
             return ResponseEntity.noContent().build();
         }).orElse(ResponseEntity.notFound().build());
     }
+
+    public ResponseEntity<?> confirmBooking(String id) {
+        Booking booking = bookingRepo.findById(id).orElse(null);
+        if (booking == null) {
+            return ResponseEntity.notFound().build();
+        }
+        if(booking.getStatus().equals(BookingStatus.PENDING)) {
+            booking.setStatus(BookingStatus.CONFIRMED);
+            bookingRepo.save(booking);
+            return ResponseEntity.ok("Booking Confirmed");
+        }
+        return ResponseEntity.badRequest().body("Only Pending Bookings can be confirmed.");
+    }
+    public ResponseEntity<?> cancelBooking(String id) {
+        Booking booking = bookingRepo.findById(id).orElse(null);
+        if (booking == null) {
+            return ResponseEntity.notFound().build();
+        }
+        if(booking.getStatus().equals(BookingStatus.PENDING)) {
+            booking.setStatus(BookingStatus.CANCELLED);
+            bookingRepo.save(booking);
+            return  ResponseEntity.ok("Booking Cancelled");
+        }
+        return ResponseEntity.badRequest().body("Only Pending Bookings can be cancelled.");
+    }
+
+    public ResponseEntity<?> completeBooking(String id) {
+        Booking booking = bookingRepo.findById(id).orElse(null);
+        if (booking == null) {
+            return ResponseEntity.notFound().build();
+        }
+        if(booking.getStatus().equals(BookingStatus.CONFIRMED)) {
+            booking.setStatus(BookingStatus.COMPLETED);
+            bookingRepo.save(booking);
+            return ResponseEntity.ok("Booking has been completed");
+        }
+        return ResponseEntity.badRequest().body("Only Confirm Bookings can be completed.");
+    }
+
 }

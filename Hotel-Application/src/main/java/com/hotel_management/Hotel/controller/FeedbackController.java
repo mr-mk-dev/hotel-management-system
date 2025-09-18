@@ -59,10 +59,9 @@ public class FeedbackController {
         if (!feedbackService.findByBookingId(bookingId).isEmpty()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Feedback already exists for this booking");
         }
+        feedback.setId(bookingId);
         feedback.setRating(feedback.getRating());
         feedback.setComment(feedback.getComment());
-        feedback.setCreatedAt(LocalDateTime.now());
-
         try {
             Feedback saved = feedbackService.saveFeedback(feedback);
             return ResponseEntity.ok(saved);

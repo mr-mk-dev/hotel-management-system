@@ -2,6 +2,7 @@ package com.hotel_management.Hotel.controller;
 
 import com.hotel_management.Hotel.entity.Booking;
 import com.hotel_management.Hotel.enums.BookingStatus;
+import com.hotel_management.Hotel.repository.BookingRepo;
 import com.hotel_management.Hotel.services.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -16,6 +17,7 @@ public class BookingController {
 
     @Autowired
     private BookingService bookingService;
+
 
     @PostMapping("/add")
     public ResponseEntity<?> addRoom(@RequestBody Booking booking){
@@ -99,5 +101,17 @@ public class BookingController {
         return bookingService.findByAmountBetween(from,to);
     }
 
+    @PutMapping("complete/{bookingId}")
+    public ResponseEntity<?>  completeBooking(@PathVariable String bookingId){
+       return bookingService.completeBooking(bookingId);
+    }
+    @PutMapping("confirm/{bookingId}")
+    public ResponseEntity<?>  confirmBooking(@PathVariable String bookingId){
+        return bookingService.confirmBooking(bookingId);
+    }
+    @PutMapping("cancel/{bookingId}")
+    public ResponseEntity<?>  cancelBooking(@PathVariable String bookingId){
+        return bookingService.cancelBooking(bookingId);
+    }
 
 }

@@ -66,7 +66,8 @@ public class SecurityConfig {
                                 "/payment/pay",
                                 "/payment/latest",
                                 "/feedback/my/**",   // user can see their own feedback
-                                "/feedback/add"      // user can add feedback
+                                "/feedback/add/**",     // user can add feedback
+                                "/feedback/update/**"      // user can add feedback
                         ).hasRole("USER")
 
                         // STAFF Endpoints (inherits USER endpoints)
