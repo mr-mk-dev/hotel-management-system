@@ -177,9 +177,11 @@ public class BookingService {
     }
 
     public ResponseEntity<?> updateBooking(String id, Booking newBooking) {
+
         Room room = roomRepo.findByRoomNo(newBooking.getRoomNo()).orElse(null);
         Booking dbBooking = bookingRepo.findById(id).orElse(null);
         User u = userRepo.findById(newBooking.getUserId()).orElse(null);
+
         return bookingRepo.findById(id).map(existing -> {
             if (room == null || dbBooking == null || u == null) {
                 return ResponseEntity.status(404).body("Data Mismatch (Either Room Not Found ," +
@@ -287,5 +289,4 @@ public class BookingService {
         }
         return ResponseEntity.badRequest().body("Only Confirm Bookings can be completed.");
     }
-
 }

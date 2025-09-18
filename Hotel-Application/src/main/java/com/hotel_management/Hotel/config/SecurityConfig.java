@@ -1,6 +1,5 @@
 package com.hotel_management.Hotel.config;
 
-import com.hotel_management.Hotel.services.Custom.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -50,7 +49,9 @@ public class SecurityConfig {
                         // Public
                         .requestMatchers(
                                 "/user/register" ,
+                                "/user/verify" ,
                                 "/user/login",
+                                "/mail/send",
                                 "/public/**").permitAll()
                         .requestMatchers("/profile/**").authenticated()
                         // USER Endpoints
@@ -82,7 +83,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/analytics/**",
                                 "/staff/**",
-                                "/feedback/**"   // owner can view all feedback
+                                "/feedback/**"
                         ).hasRole("OWNER")
 
                         // DEVELOPER Endpoints
