@@ -18,7 +18,6 @@ public class BookingController {
     @Autowired
     private BookingService bookingService;
 
-
     @PostMapping("/add")
     public ResponseEntity<?> addRoom(@RequestBody Booking booking){
        return bookingService.addBooking(booking);

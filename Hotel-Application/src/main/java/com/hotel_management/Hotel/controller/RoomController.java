@@ -1,6 +1,9 @@
 package com.hotel_management.Hotel.controller;
 
+import com.hotel_management.Hotel.entity.Booking;
 import com.hotel_management.Hotel.entity.Room;
+import com.hotel_management.Hotel.enums.BookingStatus;
+import com.hotel_management.Hotel.repository.BookingRepo;
 import com.hotel_management.Hotel.services.RoomService;
 import com.mongodb.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -18,8 +21,11 @@ import java.util.Map;
 public class RoomController {
 
     private final RoomService roomService;
-    public RoomController(RoomService roomService) {
+    private final BookingRepo bookingRepo;
+
+    public RoomController(RoomService roomService, BookingRepo bookingRepo) {
         this.roomService = roomService;
+        this.bookingRepo = bookingRepo;
     }
 
     @GetMapping("/list")
@@ -38,7 +44,9 @@ public class RoomController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> findByRoomNo(@PathVariable String roomNo) {
         Room room = roomService.findByRoomNo(roomNo);
-        return room != null ? ResponseEntity.ok(room) : ResponseEntity.status(404).body(Map.of("error", "Room not found", "roomNo", roomNo));
+        return room != null ? ResponseEntity.ok(room) :
+                ResponseEntity.status(404).body(Map.of("error",
+                        "Room not found", "roomNo", roomNo));
     }
 
     @GetMapping("/find-priceGreater/{amount}")
@@ -58,8 +66,6 @@ public class RoomController {
     public ResponseEntity<List<Room>> findByPricePerNightBetween(
             @RequestParam double from,
             @RequestParam double to) {
-
-    // -------- Looks like ---------- localhost:8080/find-between?from=1000&to=3000 ------
         return ResponseEntity.ok(roomService.findByPricePerNightBetween(from, to));
     }
 
@@ -68,9 +74,24 @@ public class RoomController {
     @PreAuthorize("hasRole('STAFF')")
     public ResponseEntity<?> removeRoom(@PathVariable String roomNo) {
         Room room = roomService.removeRoom(roomNo);
-        return room != null ?ResponseEntity.ok(Map.of("message", "Booking deleted successfully"))
-                : ResponseEntity.status(404)
-                .body(Map.of("error", "Room not found", "roomNo", roomNo));
+        if (room != null) {
+            return ResponseEntity.status(404)
+                    .body(Map.of("error", "Room not found", "roomNo", roomNo));
+        }
+
+        List<Booking> booking = bookingRepo.findByRoomNo(roomNo);
+        booking = booking
+                .stream()
+                .filter(b -> b.getStatus() == BookingStatus.CONFIRMED ||
+                        b.getStatus() == BookingStatus.PENDING
+                ).toList();
+
+        if (booking.isEmpty()) {
+            roomService.removeRoom(roomNo);
+            return ResponseEntity.ok(Map.of("message", "Room deleted successfully"));
+        }
+        return ResponseEntity.badRequest().body(Map.of("message",
+                "Room Booked,So can't be deleted until booking completes"));
     }
 
 

@@ -289,4 +289,12 @@ public class BookingService {
         }
         return ResponseEntity.badRequest().body("Only Confirm Bookings can be completed.");
     }
+
+    public ResponseEntity<?> listOfPendingBookings(String id) {
+       List<Booking> pendingBookings = bookingRepo.findByStatus(BookingStatus.PENDING);
+       if(pendingBookings.isEmpty()) {
+           return ResponseEntity.notFound().build();
+       }
+       return  ResponseEntity.ok(pendingBookings);
+    }
 }

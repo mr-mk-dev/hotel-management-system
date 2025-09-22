@@ -82,6 +82,24 @@ public class UserController {
         return ResponseEntity.ok(userMapper.toResponseDTO(user));
     }
 
+    @PutMapping("/user/profile/update-password")
+    public ResponseEntity<?> updatePassword(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam String oldPassword,
+            @RequestParam String newPassword) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+        }
+        User user = userService.findUserByEmail(userDetails.getUsername());
+        if(passwordEncoder.matches(oldPassword, newPassword)){
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userService.saveUser(user);
+            return  ResponseEntity.ok().body("Password updated successfully");
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Passwords don't match");
+    }
+
+
 }
 
 
