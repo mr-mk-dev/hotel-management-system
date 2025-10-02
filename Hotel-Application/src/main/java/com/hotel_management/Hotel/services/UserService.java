@@ -5,7 +5,6 @@ import com.hotel_management.Hotel.dto.UserResponseDTO;
 import com.hotel_management.Hotel.entity.User;
 import com.hotel_management.Hotel.mapper.UserMapper;
 import com.hotel_management.Hotel.repository.UserRepo;
-import com.hotel_management.Hotel.services.email.MailService;
 import com.hotel_management.Hotel.services.email.OtpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,9 +22,6 @@ public class UserService {
     private final UserRepo userRepository;
 
     @Autowired
-    private MailService  mailService;
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -34,47 +30,39 @@ public class UserService {
     @Autowired
     private JwtService jwtService;
 
-    @Autowired
-    private OtpService  otpService;
-
     private final UserMapper userMapper;
 
     private final Map<String, UserRequestDTO> pendingUsers = new ConcurrentHashMap<>();
 
-    public UserService( UserMapper userMapper,UserRepo userRepository) {
+    private final OtpService otpService;
+
+
+    @Autowired
+    public UserService( UserMapper userMapper,UserRepo userRepository, OtpService otpService) {
+        this.otpService = otpService;
         this.userMapper = userMapper;
         this.userRepository = userRepository;
     }
 
-    public String registerRequest(UserRequestDTO requestDTO) {
-        if (userRepository.existsByEmail(requestDTO.getEmail()) ||
-                userRepository.existsByPhone(requestDTO.getPhone())) {
-            return "User with email/phone already exists!";
+    public String registerUser(UserRequestDTO dto) {
+        if (findUserByEmail(dto.getEmail()) != null) {
+            return "Email already exists , Try log in now";
         }
-
-        pendingUsers.put(requestDTO.getEmail(), requestDTO);
-        return otpService.generateOtp(requestDTO.getEmail());
+        pendingUsers.put(dto.getEmail(), dto);
+        return otpService.generateOtp(dto.getEmail(),dto.getName());
     }
 
-    public UserResponseDTO verifyRegistration(String email, String otp) {
-        UserRequestDTO requestDTO = pendingUsers.get(email);
-
-        if (requestDTO == null) {
-            throw new RuntimeException("No pending registration for this email");
-        }
-
+    public boolean verifyUser(String email, String otp) {
         boolean isValid = otpService.validateOtp(email, otp);
-
-        if (!isValid) {
-            throw new RuntimeException("Invalid or expired OTP");
+        if (isValid) {
+            UserRequestDTO dto = pendingUsers.remove(email);
+            if (dto != null) {
+                User user = userMapper.fromReqToEntity(dto);
+                user.setPassword(passwordEncoder.encode(dto.getPassword()));
+                saveUser(user);
+            }
         }
-
-        User user = userMapper.fromReqToEntity(requestDTO);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-        User savedUser = userRepository.save(user);
-        pendingUsers.remove(email);
-        return userMapper.toResponseDTO(savedUser);
+        return isValid;
     }
 
 

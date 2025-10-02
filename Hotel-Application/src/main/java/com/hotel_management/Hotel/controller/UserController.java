@@ -1,25 +1,22 @@
 package com.hotel_management.Hotel.controller;
 
+
 import com.hotel_management.Hotel.dto.UserRequestDTO;
 import com.hotel_management.Hotel.dto.UserResponseDTO;
 import com.hotel_management.Hotel.entity.User;
 import com.hotel_management.Hotel.mapper.UserMapper;
 import com.hotel_management.Hotel.services.Custom.CustomUserDetails;
 import com.hotel_management.Hotel.services.UserService;
+import com.hotel_management.Hotel.services.email.OtpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Base64;
 import java.util.Map;
 
 @RestController
@@ -31,33 +28,59 @@ public class UserController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    private final OtpService otpService;
+
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    public UserController(UserService userService, UserMapper userMapper) {
+    private static final String USERNOTFOUND = "User not found";
+
+    public UserController(UserService userService, UserMapper userMapper,OtpService otpService) {
         this.userService = userService;
         this.userMapper = userMapper;
+        this.otpService = otpService;
     }
 
-    @PostMapping("user/register")
-    public ResponseEntity<String> register(@RequestBody UserRequestDTO requestDTO) {
-        String message = userService.registerRequest(requestDTO);
-        return ResponseEntity.ok(message);
+    @PostMapping("/user/register")
+    public ResponseEntity<?> registerUser(@RequestBody UserRequestDTO userRequest) {
+        String response = userService.registerUser(userRequest);
+        return ResponseEntity.ok(response);
     }
 
-    @PostMapping("user/verify")
-    public ResponseEntity<?> verifyOtp(@RequestParam String email,
-                                       @RequestParam String otp) {
-        try {
-            UserResponseDTO responseDTO = userService.verifyRegistration(email, otp);
-            return ResponseEntity.ok(responseDTO);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+    @PostMapping("/user/verify")
+    public ResponseEntity<?> verifyUser(@RequestParam String email,
+                                        @RequestParam String otp) {
+        boolean isValid = userService.verifyUser(email, otp);
+        if (isValid) {
+            return ResponseEntity.ok("User registered successfully");
         }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid or expired OTP");
     }
 
-    @PostMapping("/user/login")
-    public ResponseEntity<?> login(@RequestBody User user) {
+    @PostMapping("user/login")
+    public ResponseEntity<?> loginOtp(@RequestParam String email,@RequestParam String password) {
+        User user = userService.findUserByEmail(email);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(USERNOTFOUND);
+        }
+        if(!passwordEncoder.matches(password, user.getPassword())){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+        }
+        String response = otpService.generateOtpLogin(email,user.getName());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/user/login-verify")
+    public ResponseEntity<?> login(@RequestParam String email,@RequestParam String password, @RequestParam String otp) {
+
+        boolean validate = otpService.validateOtpLogin(email,otp);
+        if(!validate){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid OTP");
+        }
+
+        User user = userService.findUserByEmail(email);
+        user.setPassword(password);
         String token = userService.verifyUser(user);
 
         if ("Fail".equals(token)) {
@@ -76,7 +99,7 @@ public class UserController {
 
         User user = userService.findUserByEmail(userDetails.getUsername());
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(USERNOTFOUND);
         }
 
         return ResponseEntity.ok(userMapper.toResponseDTO(user));
@@ -91,7 +114,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
         }
         User user = userService.findUserByEmail(userDetails.getUsername());
-        if(passwordEncoder.matches(oldPassword, newPassword)){
+        if(passwordEncoder.matches(oldPassword, user.getPassword())){
             user.setPassword(passwordEncoder.encode(newPassword));
             userService.saveUser(user);
             return  ResponseEntity.ok().body("Password updated successfully");

@@ -48,10 +48,10 @@ public class SecurityConfig {
 
                         // Public
                         .requestMatchers(
-                                "/user/register" ,
-                                "/user/verify" ,
+                                "/user/register",
+                                "/user/verify",
+                                "/user/login-verify",
                                 "/user/login",
-                                "/mail/send",
                                 "/public/**").permitAll()
                         .requestMatchers("/profile/**").authenticated()
                         // USER Endpoints

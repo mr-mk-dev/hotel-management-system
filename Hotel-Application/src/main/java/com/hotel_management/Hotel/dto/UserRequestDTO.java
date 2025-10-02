@@ -12,6 +12,6 @@ public class UserRequestDTO {
     private String email;
     private String phone;
     private Role role;
-    private String password; // client can send this
+    private String password;
 }
 
